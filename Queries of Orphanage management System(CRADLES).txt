@@ -1,0 +1,247 @@
+﻿create sequence auto_id
+start with 1
+increment by 1
+minvalue 1
+maxvalue 20
+cycle
+cache 2; 
+
+create sequence auto_aid
+start with 20
+increment by 1
+minvalue 20
+maxvalue 40
+cycle
+cache 2; 
+ 
+create sequence auto_did
+start with 40
+increment by 1
+minvalue 40
+maxvalue 60
+cycle
+cache 2;
+
+—----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+create table guardian_details
+( did int primary key,
+  dname varchar2(15),
+  daadhaar varchar2(12) check(length(daadhaar)=12),
+  daddress varchar2(15) not null
+); 
+
+create table adopt_person_details
+( adid int primary key,
+  aname varchar2(15),
+  aaadhaar varchar2(12) check(length(aaadhaar)=12),
+  aaddress varchar2(15) not null,
+  annual_salary int check (annual_salary>=200000),
+  cdate date
+);
+
+create table child_details
+( 
+  cid int primary key,
+  cname varchar2(15) not null,
+  cage int,
+  gender varchar2(1) not null,
+  height varchar2(3),
+  weight varchar2(2),
+  ishandicap varchar2(10),
+  did int not null,
+  constraint fk_child_did
+  foreign key(did)
+  references guardian_details(did),
+  datearrvial date not null,
+  adid int,
+  constraint fk_child_adid
+  foreign key(adid)
+  references adopt_person_details(adid),
+  dateadopted date
+  );
+
+
+insert into guardian_details  values(auto_did.nextval,’Jenifer’,’229412254315’,’Mankhurd’);
+insert into guardian_details   values(auto_did.nextval,’Shivam’,’239894562115’,’Worli’);
+insert into guardian_details  values(auto_did.nextval,’Supriya’,’245273676835’,’Thane’);
+insert into guardian_details values(auto_did.nextval,’Abdullah’,’157453212353’,’Panvel’);
+insert into guardian_details  values(auto_did.nextval,’Kavya’,’248354421215’,’Kharghar’);
+insert into guardian_details  values(auto_did.nextval,’Mohsin’,’264747674738’,’Andheri’);
+insert into guardian_details  values(auto_did.nextval,’Vikram’,’254637211498’,’Bandra’);
+insert into guardian_details  values(auto_did.nextval,’Akshay’,’243566637783’,’Airoli’);
+insert into guardian_details  values(auto_did.nextval,’Arisha’,’546727392923’,’Ghatkopar’);
+insert into guardian_details  values(auto_did.nextval,’Priya’,’653246332778’,’Dadar’);
+—----------------------------------------------------------------
+insert into adopt_person_details  values(auto_aid.nextval,’Farhan’,’239454134315’,’Ghatkopar’,500000,’12/Jan/2022’);
+insert into adopt_person_details  values(auto_aid.nextval,’Ananya’,’256298463772’,’Vashi’,450000,’20/Mar/2022’);
+insert into adopt_person_details  values(auto_aid.nextval,’Vaibhav’,’432545561755’,’Seawoods’,600000,’19/Jan/2021’);
+insert into adopt_person_details  values(auto_aid.nextval,’Shilpa’,’345662671787’,’Mankhurd’,350000,’31/Jul/2021’);
+—----------------------------------------------------------------
+insert into child_details values(auto_id.nextval,’Sumaiya’,10,’F’,’3.1’,’43’,’Y’,40,’20/Dec/2019’,20,’12/Jan/2020’);
+insert into child_details values(auto_id.nextval,’Akash’,11,’M’,’3.0’,’30’,’N’,41,’13/May/2020’,’’,’’);
+insert into child_details values(auto_id.nextval,’Shivangi’,10,’F’,’3.1’,’43’,’N’,42,’20/Dec/2020’,’’,’’);
+insert into child_details values(auto_id.nextval,’Kartik’,9,’M’,’2.9’,’26’,’N’,45,’01/Jun/2019’,’’,’’);
+insert into child_details values(auto_id.nextval,’Karishma’,6,’F’,’2.5’,’25’,’Y’,43,’30/Sep/2018’,’23’,’20/Mar/2022’);
+insert into child_details values(auto_id.nextval,’Roshan’,12,’M’,’3.1’,’37’,’N’,48,’02/Sep/2021’,’’,’’);
+insert into child_details values(auto_id.nextval,’Nitin’,3,’M’,’1.9’,’15’,’N’,44,’10/Apr/2018’,21,’31/Jul/2021’);
+insert into child_details values(auto_id.nextval,’Reena’,5,’F’,’2.5’,’19’,’N’,49,’28/Mar/2017’,’’,’’);
+insert into child_details values(auto_id.nextval,’Simran’,4,’F’,’2.0’,’17’,’N’,47,’18/May/2019’,’’,’’);
+insert into child_details values(auto_id.nextval,’Aarohi’,9,’F’,’3.0’,’24’,’N’,46,’20/Dec/2018’,’’,’’);
+—----------------------------------------------------------------
+desc donation;
+desc child_details;
+desc guardian_details;
+desc adopt_person_details;
+—----------------------------------------------------------------
+set linesize 500
+select * from child_details;
+select * from guardian_details;
+select * from adopt_person_details;
+select * from donation;
+—----------------------------------------------------------------
+set serveroutput on;
+
+—---------jo jo bache adopt hua hai—--------------
+select * from child_details 
+where dateadopted is not null; 
+
+—--------no of female and no. of male—--------------------------
+select gender,count(gender) from child_details
+group by gender;
+
+—--------------Adopted child by gender(male)—--------------------
+select a.aname,c.cname,c.gender from child_details c,adopt_person_details a where c.adid=a.adid and c.gender=’M’;
+
+---------Adopted child by gender(female)—--------------------
+select a.aname,c.cname,c.gender from child_details c,adopt_person_details a where c.adid=a.adid and c.gender=’F’;
+—--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+--difference between dateadopted to datearrival —--------------
+
+select cname,floor(c.dateadopted-c.datearrvial) as “No. of days”,
+ceil((c.dateadopted-c.datearrvial)/30) as “No. of months”,
+extract(year from dateadopted)-extract(year from datearrvial) as “No. of year” from child_details c where dateadopted is not null;
+
+--details of guardian who have drop the child—----------------
+select c.cname,g.did,g.dname,g.daddress,g.daadhaar
+from child_details c,guardian_details g where g.daadhaar like ’%_______2115’;
+
+--child name ,Guardian name,adopt person—-------------
+select c.cid,c.cname,d.dname,a.aname
+from child_details c,guardian_details d,adopt_person_details a
+where c.did=d.did and a.adid=c.adid;
+
+—----------------------------------------------------------------
+----------------To update the child details table,---------------
+----------------insert the value in adoption table---------------
+create or replace package pkg_adopt
+is
+procedure updaterecord(id child_details.cid%type,ad_id adopt_person_details.adid%type);
+procedure insertrecord(id child_details.cid%type);
+end pkg_adopt;
+/
+create or replace package body pkg_adopt
+is
+procedure updaterecord(id child_details.cid%type,
+ad_id adopt_person_details.adid%type)
+is
+BEGIN
+update child_details set adid=ad_id,dateadopted=sysdate where cid=id;
+IF sql%found THEN
+dbms_output.put_line('Record is updated');
+ELSE
+dbms_output.put_line('Record not found');
+END IF;
+END updaterecord;
+
+procedure insertrecord(id child_details.cid%type)
+is
+name adopt_person_details.aname%type;
+aadhaar adopt_person_details.aaadhaar%type; 
+address adopt_person_details.aaddress%type;
+sal adopt_person_details.annual_salary%type;
+BEGIN
+insert into adopt_person_details values(auto_aid.nextval,’&name’,’&aadhaar’,’&address’,&sal,sysdate);
+commit;
+END insertrecord;
+END pkg_adopt;
+/
+
+DECLARE
+child_id child_details.cid%type;
+ad_id adopt_person_details.adid%type;
+BEGIN
+child_id:=&child_id;
+ad_id:=&ad_id;
+pkg_adopt.insertrecord(child_id);
+pkg_adopt.updaterecord(child_id,ad_id);
+END;
+/
+select * from child_details;
+select * from adopt_person_details;
+—---------------------------------------------------------------
+
+DECLARE
+age number;
+temp child_details%rowtype;
+BEGIN
+for i in (select * into temp from child_details where cage<=&age and dateadopted is null)loop
+dbms_output.put_line(i.cid||’  ’||i.cname||’  ’||
+i.cage||’ ’||i.datearrvial);
+End loop;
+END;
+/
+-----------------------------------------------------------------
+drop package pkg_adopt;
+
+drop sequence auto_id;
+drop sequence auto_did;
+drop sequence auto_aid;
+
+drop table child_details;
+drop table adopt_person_details;
+drop table guardian_details;
+----------------------Not to run—---------------
+create table donation
+(
+doid int primary key,
+dname varchar2(15),
+dthing varchar2(15),
+damount int,
+adid int,
+pmode varchar2(10),
+constraint fk_adid
+foreign key(adid)
+references adopt_person_details(adid)
+);
+
+create sequence auto_doid
+start with 60
+increment by 1
+minvalue 1
+maxvalue 80
+cycle
+cache 2;
+
+insert into donation values(auto_doid.nextval,’Vaibhav’,’’,10000,22,’Gpay’);
+insert into donation values(auto_doid.nextval,’Sumit’,’Clothes’,5000,’’,’Cash’);
+insert into donation values(auto_doid.nextval,’Arisha’,’Food’,8000,’’,’Cheque’);
+insert into donation values(auto_doid.nextval,’Divya’,’Books’,20000,’’,’Cash’);
+insert into donation values(auto_doid.nextval,’Ananya’,’’,15000,21,’Card’);
+insert into donation values(auto_doid.nextval,’Mohsin’,’’,30000,’’,’Gpay’);
+insert into donation values(auto_doid.nextval,’Farhan’,’Toys’,25000,20,’Gpay’);
+
